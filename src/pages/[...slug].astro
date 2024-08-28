@@ -1,0 +1,35 @@
+---
+// File: /src/pages/[...slug].astro
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+
+type CollectionName = 'dve' | 'farmacia' | 'primaria' | 'dae';
+
+export async function getStaticPaths() {
+  const collections: CollectionName[] = ['dve', 'farmacia', 'primaria', 'dae'];
+  const allDocuments = await Promise.all(
+    collections.map(async (name) => {
+      const documents = await getCollection(name);
+      return documents.map((entry: CollectionEntry<CollectionName>) => ({
+        params: { slug: `${name}/${entry.slug}` },
+        props: { entry, collection: name },
+      }));
+    })
+  );
+  return allDocuments.flat();
+}
+
+interface Props {
+  entry: CollectionEntry<CollectionName>;
+  collection: CollectionName;
+}
+
+const { entry, collection } = Astro.props;
+const { Content, headings } = await entry.render();
+---
+
+<Layout title={entry.data.title} headings={headings}>
+  <article class="prose lg:prose-lg mx-auto">
+    <Content />
+  </article>
+</Layout>

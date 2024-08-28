@@ -1,0 +1,64 @@
+---
+// File: /src/components/Sidebar.astro
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type CollectionName = 'dve' | 'farmacia' | 'primaria' | 'dae';
+
+async function getDocumentsFromCollection(collectionName: CollectionName) {
+  return await getCollection(collectionName);
+}
+
+const collections: CollectionName[] = ['dve', 'farmacia', 'primaria', 'dae'];
+const allDocuments = await Promise.all(
+  collections.map(async (name) => ({
+    name,
+    documents: await getDocumentsFromCollection(name),
+  }))
+);
+
+type DocumentWithCollection = CollectionEntry<CollectionName> & { collection: CollectionName };
+
+const groupedDocuments = allDocuments.flatMap(({ name, documents }) =>
+  documents.map((doc: CollectionEntry<CollectionName>): DocumentWithCollection => ({
+    ...doc,
+    collection: name,
+  }))
+).reduce<Record<string, Record<string, DocumentWithCollection[]>>>((acc, doc) => {
+  doc.data.sector.forEach((sector: string) => {
+    if (!acc[sector]) {
+      acc[sector] = {};
+    }
+    if (!acc[sector][doc.data.category]) {
+      acc[sector][doc.data.category] = [];
+    }
+    acc[sector][doc.data.category].push(doc);
+  });
+  return acc;
+}, {});
+
+type GroupedDocuments = typeof groupedDocuments;
+---
+
+<aside class="bg-gray-100 w-64 p-4 overflow-y-auto sticky top-16 h-[calc(100vh-4rem)]">
+  <nav>
+    {Object.entries(groupedDocuments).map(([sector, categories]) => (
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold mb-2">{sector}</h2>
+        {(Object.entries(categories) as [string, DocumentWithCollection[]][]).map(([category, docs]) => (
+          <div class="mb-2">
+            <h3 class="text-base font-medium">{category}</h3>
+            <ul class="ml-4 text-sm">
+              {docs.map((doc: DocumentWithCollection) => (
+                <li>
+                  <a href={`/${doc.collection}/${doc.slug}`} class="hover:underline">
+                    {doc.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    ))}
+  </nav>
+</aside>

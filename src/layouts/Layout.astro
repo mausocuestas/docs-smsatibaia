@@ -1,0 +1,47 @@
+---
+// File: /src/layouts/Layout.astro
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Sidebar from '../components/Sidebar.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+
+interface Props {
+  title: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const { title, headings = [] } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="flex flex-col min-h-screen bg-gray-50">
+    <Header />
+    <div class="flex-grow flex overflow-hidden">
+      <Sidebar />
+      <main class="flex-grow p-8 overflow-y-auto">
+        <div class="max-w-3xl mx-auto">
+          <slot />
+        </div>
+      </main>
+      <TableOfContents headings={headings} />
+    </div>
+    <Footer />
+  </body>
+</html>
+
+<style is:global>
+  h1 { @apply text-3xl font-bold mb-4; }
+  h2 { @apply text-2xl font-semibold mb-3; }
+  h3 { @apply text-xl font-semibold mb-2; }
+  h4 { @apply text-lg font-medium mb-2; }
+  h5 { @apply text-base font-medium mb-1; }
+  h6 { @apply text-sm font-medium mb-1; }
+</style>

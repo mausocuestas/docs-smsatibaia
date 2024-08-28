@@ -1,0 +1,38 @@
+---
+// File: /src/components/TableOfContents.astro
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings?: Heading[];
+}
+
+const { headings = [] } = Astro.props;
+---
+
+<nav class="w-64 p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+  {headings.length > 0 ? (
+    <ul class="space-y-2 text-sm">
+      {headings.map((heading: Heading) => (
+        <li class={`toc-level-${heading.depth}`}>
+          <a href={`#${heading.slug}`} class="hover:underline">
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="text-sm text-gray-500">Nenhum conteúdo disponível</p>
+  )}
+</nav>
+
+<style>
+  .toc-level-2 { @apply pl-0; }
+  .toc-level-3 { @apply pl-3; }
+  .toc-level-4 { @apply pl-6; }
+  .toc-level-5 { @apply pl-9; }
+  .toc-level-6 { @apply pl-12; }
+</style>
